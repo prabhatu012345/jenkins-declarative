@@ -110,7 +110,7 @@ pipeline {
                 }
             }
             steps {
-                 container('maven') {
+                 container('maven-container') {
                     script {
                             echo 'Running Selenium tests...'
                             // sh 'mvn test -Dtest=com/example/SeleniumTest'
