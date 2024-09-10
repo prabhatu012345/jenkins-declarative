@@ -1,1 +1,1 @@
-# jenkins-maven-pipeline
+# Jenkins Declarative pipeline
