@@ -1,82 +1,65 @@
 pipeline {
-    agent {
-        kubernetes {
-            label 'jenkins-pipeline'
-            defaultContainer 'jnlp'
-            yaml '''
-apiVersion: v1
-kind: Pod
-metadata:
-  name: jenkins-pipeline
-spec:
-  serviceAccountName: jenkins-ksa
-  containers:
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
-    # Jenkins will handle the arguments automatically
-    volumeMounts:
-    - mountPath: /var/jenkins_home
-      name: jenkins-home
-  - name: maven
-    image: maven:3.8.5-openjdk-11  # Use a Maven Docker image
-    command:
-    - cat
-    tty: true
-  - name: jmeter
-    image: justb4/jmeter:5.5  # this is official apache jmeter image
-    command:
-    - cat
-    tty: true
-  volumes:
-  - name: jenkins-home
-    emptyDir: {}
-            '''
-        }
-    }
-
-
-    stages {
-        stage('Clone Source Code') {
-            steps {
-                script {
-                    git url: 'https://github.com/prabhatu012345/jenkins-maven-pipeline.git', branch: 'main'
+    agent none {   
+        stage('Build Deploy and Unit Test') {
+           agent {
+                kubernetes {
+                    label 'maven'
+                    defaultContainer 'maven-container'
+                    yaml """
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      labels:
+                        some-label: maven
+                    spec:
+                      nodeSelector:
+                        node-pool: jenkins-agent-internal # need to change it
+                      containers:
+                      - name: maven-container
+                        image: maven:3.8.4-jdk-11
+                        tty: true
+                        command:
+                        - cat
+                    """
                 }
             }
-        }
-
-        stage('Build with Maven') {
             steps {
                 container('maven') {
                     script {
                         echo 'Building project with Maven...'
                         sh 'mvn clean package -DskipTests'
-                    }
-                }
-            }
-        }
-
-       stage('Deploy created artifact to artifact repository') {
-            steps {
-                container('maven') {
-                    script {
                         echo 'Deploying jar file...'
                         sh 'mvn deploy -DskipTests'
-                    }
-                }
-            }
-        }
-
-        stage('JUnit Test') {
-            steps {
-                container('maven') {
-                    script {
                         echo 'Running JUnit tests...'
                         sh 'mvn test -Dtest=com.example.HelloWorldTest'
                     }
                 }
             }
         }
+
         stage('Load Performance Test with JMeter') {
+            agent {
+                kubernetes {
+                    label 'jmeter'
+                    defaultContainer 'jmeter-container'
+                    yaml """
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      labels:
+                        some-label: jmeter
+                    spec:
+                      nodeSelector:
+                        node-pool: jenkins-jmeter-internal # need to change it
+                      containers:
+                      - name: jmeter-container
+                        image: justb4/jmeter:5.5
+                        tty: true
+                        command:
+                        - cat
+                    """
+                }
+            }
             steps {
                 container('jmeter') {
                     script {
@@ -90,17 +73,5 @@ spec:
                 }
             }
         }
-
-        stage('Selenium Test') {
-            steps {
-                 container('maven') {
-                    script {
-                            echo 'Running Selenium tests...'
-                            // sh 'mvn test -Dtest=com/example/SeleniumTest'
-                            sh 'mvn test -Dtest=com.example.SeleniumTest -Dwebdriver.base.url=http://selenium:4444/wd/hub'
-                    }
-                }
-             }
-          }
       }
 }
