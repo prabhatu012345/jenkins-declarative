@@ -3,12 +3,14 @@ pipeline {
 
     stages {
         stage('Clone Source Code') {
+            agent any {
+            }
             steps {
                 script {
                     git url: 'https://github.com/prabhatu012345/jenkins-declarative.git', branch: 'main'
                 }
             }
-        }
+       }
         stage('Build Deploy and Unit Test') {
             agent {
                 kubernetes {
