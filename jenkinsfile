@@ -2,6 +2,15 @@ pipeline {
     agent none // Define that no agent should be used at the top level
 
     stages {
+        stage('Clone Source Code') {
+            steps {
+                script {
+                    git url: 'https://github.com/prabhatu012345/jenkins-declarative.git', branch: 'main'
+                }
+            }
+        }
+
+    stages {
         stage('Build Deploy and Unit Test') {
             agent {
                 kubernetes {
