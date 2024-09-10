@@ -1,1 +1,1 @@
-# jenkins-declarative
+# jenkins-maven-pipeline
