@@ -1,7 +1,9 @@
 pipeline {
-    agent none {   
+    agent none // Define that no agent should be used at the top level
+
+    stages {
         stage('Build Deploy and Unit Test') {
-           agent {
+            agent {
                 kubernetes {
                     label 'maven'
                     defaultContainer 'maven-container'
@@ -13,7 +15,7 @@ pipeline {
                         some-label: maven
                     spec:
                       nodeSelector:
-                        node-pool: jenkins-agent-internal # need to change it
+                        node-pool: jenkins-agent-internal
                       containers:
                       - name: maven-container
                         image: maven:3.8.4-jdk-11
@@ -24,7 +26,7 @@ pipeline {
                 }
             }
             steps {
-                container('maven') {
+                container('maven-container') {
                     script {
                         echo 'Building project with Maven...'
                         sh 'mvn clean package -DskipTests'
@@ -50,7 +52,7 @@ pipeline {
                         some-label: jmeter
                     spec:
                       nodeSelector:
-                        node-pool: jenkins-jmeter-internal # need to change it
+                        node-pool: jenkins-jmeter-internal
                       containers:
                       - name: jmeter-container
                         image: justb4/jmeter:5.5
@@ -61,7 +63,7 @@ pipeline {
                 }
             }
             steps {
-                container('jmeter') {
+                container('jmeter-container') {
                     script {
                         // Verify that the JMeter test plan file exists
                         echo 'Checking if JMeter test plan file exists...'
@@ -73,5 +75,5 @@ pipeline {
                 }
             }
         }
-      }
+    }
 }
