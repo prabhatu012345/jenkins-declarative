@@ -23,6 +23,7 @@ pipeline {
                       labels:
                         some-label: maven
                     spec:
+                      serviceAccountName: jenkins-ksa
                       nodeSelector:
                         node-pool: jenkins-agent-internal
                       containers:
