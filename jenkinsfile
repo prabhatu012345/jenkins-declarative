@@ -85,5 +85,39 @@ pipeline {
                 }
             }
         }
+       stage('Selenium Test') {
+            agent {
+                kubernetes {
+                    label 'maven'
+                    defaultContainer 'maven-container'
+                    yaml """
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      labels:
+                        some-label: maven
+                    spec:
+                      serviceAccountName: jenkins-ksa
+                      nodeSelector:
+                        node-pool: jenkins-agent-internal
+                      containers:
+                      - name: maven-container
+                        image: maven:3.8.4-jdk-11
+                        tty: true
+                        command:
+                        - cat
+                    """
+                }
+            }
+            steps {
+                 container('maven') {
+                    script {
+                            echo 'Running Selenium tests...'
+                            // sh 'mvn test -Dtest=com/example/SeleniumTest'
+                            sh 'mvn test -Dtest=com.example.SeleniumTest -Dwebdriver.base.url=http://selenium:4444/wd/hub'
+                    }
+                }
+             }
+          }
     }
 }
