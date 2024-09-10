@@ -25,7 +25,7 @@ pipeline {
                     spec:
                       serviceAccountName: jenkins-ksa
                       nodeSelector:
-                        node-pool: jenkins-agent-internal
+                        node-pool: jenkins-agent-external
                       containers:
                       - name: maven-container
                         image: maven:3.8.4-jdk-11
@@ -62,7 +62,7 @@ pipeline {
                         some-label: jmeter
                     spec:
                       nodeSelector:
-                        node-pool: jenkins-jmeter-internal
+                        node-pool: jenkins-jmeter-external
                       containers:
                       - name: jmeter-container
                         image: justb4/jmeter:5.5
