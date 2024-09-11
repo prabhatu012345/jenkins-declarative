@@ -1,5 +1,5 @@
 pipeline {
-    agent none // Define that no agent should be used at the top level
+    agent none
 
     stages {
         stage('Clone Source Code') {
@@ -55,6 +55,9 @@ pipeline {
                         echo 'Listing target directory...'
                         sh 'ls -l target/'
 
+                        echo "Jar File Path: ${jarFile}"
+                        echo "Nexus URL: ${nexusUrl}"
+
                         echo 'Uploading JAR file to Nexus...'
                         withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                             sh """
@@ -95,10 +98,8 @@ pipeline {
             steps {
                 container('jmeter-container') {
                     script {
-                        // Verify that the JMeter test plan file exists
                         echo 'Checking if JMeter test plan file exists...'
                         sh 'ls -l load_test_plan.jmx'
-                        // Run JMeter performance tests
                         echo 'Running JMeter load test...'
                         sh 'jmeter -n -t load_test_plan.jmx -l results.jtl -e -o /results'
                     }
