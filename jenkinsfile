@@ -48,7 +48,7 @@ pipeline {
                         sh 'mvn test -Dtest=com.example.HelloWorldTest'
                         
                         def artifactId = 'maven-project'
-                        def version = '4.0.0'
+                        def version = '1.0-SNAPSHOT'
                         def jarFile = "target/${artifactId}-${version}.jar"
 
                         echo 'Listing target directory...'
@@ -60,7 +60,7 @@ pipeline {
                             echo "Using credentials for Nexus upload"
                             curl -u ${USERNAME}:${PASSWORD} \
                                  --upload-file ${jarFile} \
-                                 http://nexus.prod.urbanbamboo.in:8081/repository/prabhat/${artifactId}/${version}/${artifactId}-${version}.jar
+                                 http://nexus.prod.urbanbamboo.in:8081/repository/maven-releases/${artifactId}/${version}/${artifactId}-${version}.jar
                             '''
                         }
                     }
