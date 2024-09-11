@@ -51,13 +51,17 @@ pipeline {
                         def version = '4.0.0'
                         def jarFile = "target/${artifactId}-${version}.jar"
 
+                        echo 'Listing target directory...'
+                        sh 'ls -l target/'
+
                         echo 'Uploading JAR file to Nexus...'
-                        withCredentials([usernamePassword(credentialsId: 'nexus-credential-prabhat', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                            sh """
+                        withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh '''
+                            echo "Using credentials for Nexus upload"
                             curl -u ${USERNAME}:${PASSWORD} \
                                  --upload-file ${jarFile} \
-                                 http://nexus.prod.urbanbamboo.in:8081/repository/maven-releases/${artifactId}/${version}/${artifactId}-${version}.jar
-                            """
+                                 http://nexus.prod.urbanbamboo.in:8081/repository/prabhat/${artifactId}/${version}/${artifactId}-${version}.jar
+                            '''
                         }
                     }
                 }
