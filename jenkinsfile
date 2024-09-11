@@ -40,10 +40,25 @@ pipeline {
                     script {
                         echo 'Building project with Maven...'
                         sh 'mvn clean package -DskipTests'
-                        echo 'Deploying jar file...'
+                        
+                        echo 'Deploying JAR file...'
                         sh 'mvn deploy -DskipTests'
+                        
                         echo 'Running JUnit tests...'
                         sh 'mvn test -Dtest=com.example.HelloWorldTest'
+                        
+                        def artifactId = 'maven-project'
+                        def version = '4.0.0'
+                        def jarFile = "target/${artifactId}-${version}.jar"
+
+                        echo 'Uploading JAR file to Nexus...'
+                        withCredentials([usernamePassword(credentialsId: 'nexus-credential-prabhat', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh """
+                            curl -u ${USERNAME}:${PASSWORD} \
+                                 --upload-file ${jarFile} \
+                                 http://nexus.prod.urbanbamboo.in:8081/repository/maven-releases/${artifactId}/${version}/${artifactId}-${version}.jar
+                            """
+                        }
                     }
                 }
             }
@@ -86,7 +101,7 @@ pipeline {
             }
         }
 
-       stage('Selenium Test') {
+        stage('Selenium Test') {
             agent {
                 kubernetes {
                     label 'maven'
@@ -111,14 +126,13 @@ pipeline {
                 }
             }
             steps {
-                 container('maven-container') {
+                container('maven-container') {
                     script {
-                            echo 'Running Selenium tests...'
-                            // sh 'mvn test -Dtest=com/example/SeleniumTest'
-                            sh 'mvn test -Dtest=com.example.SeleniumTest -Dwebdriver.base.url=http://selenium:4444/wd/hub'
+                        echo 'Running Selenium tests...'
+                        sh 'mvn test -Dtest=com.example.SeleniumTest -Dwebdriver.base.url=http://selenium:4444/wd/hub'
                     }
                 }
-             }
-          }
+            }
+        }
     }
 }
