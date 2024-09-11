@@ -62,7 +62,7 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                             sh """
                             echo "Using credentials for Nexus upload"
-                            curl -u ${USERNAME}:${PASSWORD} \
+                            curl -v -u ${USERNAME}:${PASSWORD} \
                                  --upload-file ${jarFile} \
                                  ${nexusUrl}
                             """
