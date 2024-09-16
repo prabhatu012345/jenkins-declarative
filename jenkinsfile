@@ -11,7 +11,7 @@ pipeline {
             }
         }
 
-        stage('Build Deploy and Unit Test') {
+        stage('Build, Test and Deploy') {
             agent {
                 kubernetes {
                     label 'maven'
